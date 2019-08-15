@@ -7,24 +7,11 @@ a new context.
 
 For demonstration purposes, let's define a block helper that invokes the block as though no helper existed.
 
-```handlebars
-<div class="entry">
-  <h1>{{title}}</h1>
-  <div class="body">
-    {{#noop}}{{body}}{{/noop}}
-  </div>
-</div>
-```
+<Example examplePage="/examples/basic-blocks" />
 
 The `noop` helper (short for "no operation") will receive an options hash. This options hash contains a function
 (`options.fn`) that behaves like a normal compiled Handlebars template. Specifically, the function will take a context
 and return a String.
-
-```js
-Handlebars.registerHelper("noop", function(options) {
-  return options.fn(this);
-});
-```
 
 Handlebars always invokes helpers with the current context as `this`, so you can invoke the block with `this` to
 evaluate the block in the current context.
@@ -41,61 +28,23 @@ be referenced using:
 
 To better illustrate the syntax, let's define another block helper that adds some markup to the wrapped text.
 
-```handlebars
-<div class="entry">
-  <h1>{{title}}</h1>
-  <div class="body">
-    {{#bold}}{{body}}{{/bold}}
-  </div>
-</div>
-```
+<Example examplePage="/examples/basic-block-variation" />
 
 The bold helper will add markup to make its text bold. As before, the function will take a context as input and return a
 String.
-
-```js
-Handlebars.registerHelper("bold", function(options) {
-  return new Handlebars.SafeString('<div class="mybold">' + options.fn(this) + "</div>");
-});
-```
 
 ## The `with` helper
 
 The `with` helper demonstrates how to pass a parameter to your helper. When a helper is called with a parameter, it is
 invoked with whatever context the template passed in.
 
-```handlebars
-<div class="entry">
-  <h1>{{title}}</h1>
-  {{#with story}}
-    <div class="intro">{{{intro}}}</div>
-    <div class="body">{{{body}}}</div>
-  {{/with}}
-</div>
-```
+<Example examplePage="/examples/with-helper" />
 
 You might find a helper like this useful if a section of your JSON object contains deeply nested properties, and you
 want to avoid repeating the parent name. The above template could be useful with a JSON like:
 
-```js
-{
-  title: "First Post",
-  story: {
-    intro: "Before the jump",
-    body: "After the jump"
-  }
-}
-
-```
-
 Implementing a helper like this is a lot like implementing the `noop` helper. Helpers can take parameters, and
 parameters are evaluated just like expressions used directly inside `{{mustache}}` blocks.
-
-```js
-Handlebars.registerHelper("with", function(context, options) {
-  return options.fn(context);
-});
-```
 
 Parameters are passed to helpers in the order that they are passed, followed by the options hash.
 
@@ -104,37 +53,9 @@ Parameters are passed to helpers in the order that they are passed, followed by 
 A common use-case for block helpers is using them to define custom iterators. In fact, all Handlebars built-in helpers
 are defined as regular Handlebars block helpers. Let's take a look at how the built-in `each` helper works.
 
-```handlebars
-<div class="entry">
-  <h1>{{title}}</h1>
-  {{#with story}}
-    <div class="intro">{{{intro}}}</div>
-    <div class="body">{{{body}}}</div>
-  {{/with}}
-</div>
-<div class="comments">
-  {{#each comments}}
-    <div class="comment">
-      <h2>{{subject}}</h2>
-      {{{body}}}
-    </div>
-  {{/each}}
-</div>
-```
+<Example examplePage="/examples/simple-iterators" />
 
 In this case, we want to invoke the block passed to `each` once for each element in the comments Array.
-
-```js
-Handlebars.registerHelper("each", function(context, options) {
-  var ret = "";
-
-  for (var i = 0, j = context.length; i < j; i++) {
-    ret = ret + options.fn(context[i]);
-  }
-
-  return ret;
-});
-```
 
 In this case, we iterate over the items in the passed parameter, invoking the block once with each item. As we iterate,
 we build up a String result, and then return it.
@@ -142,36 +63,9 @@ we build up a String result, and then return it.
 This pattern can be used to implement more advanced iterators. For instance, let's create an iterator that creates a
 `<ul>` wrapper, and wraps each resulting element in an `<li>.`
 
-```handlebars
-{{#list nav}}
-  <a href="{{url}}">{{title}}</a>
-{{/list}}
-```
-
-You would evaluate this template using something like this as the context:
-
-```js
-{
-  nav: [
-    { url: "http://www.yehudakatz.com", title: "Katz Got Your Tongue" },
-    { url: "http://www.sproutcore.com/block", title: "SproutCore Blog" }
-  ];
-}
-```
+<Example examplePage="/examples/simple-iterators-2" />
 
 The helper is similar to the original `each` helper.
-
-```js
-Handlebars.registerHelper("list", function(context, options) {
-  var ret = "<ul>";
-
-  for (var i = 0, j = context.length; i < j; i++) {
-    ret = ret + "<li>" + options.fn(context[i]) + "</li>";
-  }
-
-  return ret + "</ul>";
-});
-```
 
 Using a library like underscore.js or SproutCore's runtime library could make this a bit prettier. For example, here's
 what it might look like using SproutCore's runtime library:
